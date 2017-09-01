@@ -21,6 +21,10 @@
 <manifest package="eu.anael.calendarreport"
           xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Accès au calendrier en LS -->
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

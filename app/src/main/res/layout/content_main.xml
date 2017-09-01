@@ -18,7 +18,7 @@
 * along with calendarReport. If not, see <http://www.gnu.org/licenses/>
 */
 -->
-<android.support.constraint.ConstraintLayout
+<android.widget.RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -29,12 +29,20 @@
     tools:showIn="@layout/activity_main">
 
     <TextView
+        android:id="@+id/texteSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:layout_alignBottom="@+id/listeCalendrier"
+        android:layout_alignParentTop="true"
+        android:text="Calendrier:"/>
 
-</android.support.constraint.ConstraintLayout>
+    <Spinner
+        android:id="@+id/listeCalendrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/texteSpinner"
+        android:layout_toEndOf="@id/texteSpinner"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"/>
+
+</android.widget.RelativeLayout>
