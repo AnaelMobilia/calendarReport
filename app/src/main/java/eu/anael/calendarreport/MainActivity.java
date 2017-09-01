@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
             // Nom d'affichage
             listeCalendriers.add(monCursor.getString(1));
         }
+        monCursor.close();
         lesCalendriers = listeCalendriers.toArray(new String[0]);
         idCalendriers = listeIDCalendriers.toArray(new String[0]);
 
@@ -226,14 +227,14 @@ public class MainActivity extends AppCompatActivity {
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION, CalendarContract.Instances.CALENDAR_ID + " = ?",
                                                     idCalendrierVoulu, null);
-        HashMap<String, Long> stats = new HashMap();
+        HashMap<String, Long> stats = new HashMap<String, Long>();
         while (monCursor.moveToNext()) {
             // Type de l'événement
             String monType = monCursor.getString(0);
 
             // Création de la ligne si inexistante
             if(!stats.containsKey(monType)) {
-                stats.put(monType, Long.valueOf(0));
+                stats.put(monType, 0L);
             }
 
             // Durée déjà existante
@@ -251,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
                   "" + monCursor.getString(0) + " - " + new Date(monCursor.getLong(1)) + " - " + new Date(monCursor.getLong(2))
                   + " => " + laDuree);
         }
+        monCursor.close();
 
         // Tri
         Map<String, Long> stats2 = sortByValue(stats);
