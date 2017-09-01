@@ -40,16 +40,22 @@
         android:id="@+id/listeCalendrier"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/texteSpinner"
         android:layout_toEndOf="@id/texteSpinner"
+        android:layout_toRightOf="@id/texteSpinner"
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"/>
 
-    <TextView
-        android:id="@+id/texteStats"
-        android:layout_width="wrap_content"
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/listeCalendrier"
-        android:text="Statistiques..."/>
+        android:layout_below="@id/listeCalendrier">
+
+        <TextView
+            android:id="@+id/texteStats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Statistiques..."/>
+
+    </ScrollView>
 
 </android.widget.RelativeLayout>

@@ -258,12 +258,13 @@ public class MainActivity extends AppCompatActivity {
         Map<String, Long> stats2 = sortByValue(stats);
 
         // Statistiques
+        TextView mesStats = (TextView) findViewById(R.id.texteStats);
+        mesStats.clearComposingText();
         for (HashMap.Entry<String,Long> entry : stats2.entrySet()) {
             String key = entry.getKey();
             Long value = entry.getValue();
 
             //Log.e("stats", key + " -> " + (value/60));
-            TextView mesStats = (TextView) findViewById(R.id.texteStats);
             mesStats.append(key + " -> " + value/60 + "\n");
         }
 
