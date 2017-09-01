@@ -20,6 +20,7 @@ package eu.anael.calendarreport;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -37,8 +38,18 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
     // Liste des calendriers de l'appareil
     String[] lesCalendriers;
     // ID des calendriers
-    Integer[] idCalendriers;
+    String[] idCalendriers;
     // ID du calendrier selectionné
-    Integer idCalendrierVoulu;
+    String[] idCalendrierVoulu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,20 +159,21 @@ public class MainActivity extends AppCompatActivity {
      */
     public void afficherListeCalendriers() {
         // Données à récupérer sur les calendriers
-        String[] EVENT_PROJECTION = new String[]{ CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME };
+        String[] EVENT_PROJECTION = new String[]{ CalendarContract.Calendars._ID, CalendarContract.Calendars
+                .CALENDAR_DISPLAY_NAME };
 
         // Récupération de la liste des calendriers
         Cursor monCursor = monContentResolver.query(monURI, EVENT_PROJECTION, null, null, null);
         ArrayList<String> listeCalendriers = new ArrayList<>();
-        ArrayList<Integer> listeIDCalendriers = new ArrayList<>();
+        ArrayList<String> listeIDCalendriers = new ArrayList<>();
         while (monCursor.moveToNext()) {
             // ID
-            listeIDCalendriers.add(monCursor.getInt(0));
+            listeIDCalendriers.add(String.valueOf(monCursor.getInt(0)));
             // Nom d'affichage
             listeCalendriers.add(monCursor.getString(1));
         }
         lesCalendriers = listeCalendriers.toArray(new String[0]);
-        idCalendriers = listeIDCalendriers.toArray(new Integer[0]);
+        idCalendriers = listeIDCalendriers.toArray(new String[0]);
 
         // Récupération de l'objet graphique
         Spinner listeCalendriersSpinner = (Spinner) findViewById(R.id.listeCalendrier);
@@ -174,9 +186,11 @@ public class MainActivity extends AppCompatActivity {
         listeCalendriersSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d("onItemSelectedListener", lesCalendriers[i] + " -> " + idCalendriers[i]);
+                Log.w("onItemSelectedListener", lesCalendriers[i] + " -> " + idCalendriers[i]);
                 // Mise à jour de l'ID du calendrier choisi
-                idCalendrierVoulu = idCalendriers[i];
+                idCalendrierVoulu = new String[]{ idCalendriers[i] };
+                // Lance l'affichage des stats
+                afficherStats();
             }
 
             @Override
@@ -184,6 +198,103 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    /**
+     * Affiche les stats du calendrier selectionné
+     * Read : https://www.reddit.com/r/androiddev/comments/2da207/getting_events_from_a_specific_calendar_and/
+     */
+    public void afficherStats() {
+        // Données à récupérer sur les événements du calendrier
+        String[] EVENT_PROJECTION = new String[]{ CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN,
+                CalendarContract.Instances.END };
+
+        // Filtre sur les dates
+        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+
+        Calendar beginTime = Calendar.getInstance();
+        beginTime.set(2016, Calendar.SEPTEMBER, 2, 8, 0);
+        long startMills = beginTime.getTimeInMillis();
+
+        Calendar endTime = Calendar.getInstance();
+        endTime.set(2017, Calendar.SEPTEMBER, 2, 20, 0);
+        long endMills = endTime.getTimeInMillis();
+
+        ContentUris.appendId(builder, startMills);
+        ContentUris.appendId(builder, endMills);
+
+        // Récupération de la liste des événements
+        Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION, CalendarContract.Instances.CALENDAR_ID + " = ?",
+                                                    idCalendrierVoulu, null);
+        HashMap<String, Long> stats = new HashMap();
+        while (monCursor.moveToNext()) {
+            // Type de l'événement
+            String monType = monCursor.getString(0);
+
+            // Création de la ligne si inexistante
+            if(!stats.containsKey(monType)) {
+                stats.put(monType, Long.valueOf(0));
+            }
+
+            // Durée déjà existante
+            Long maDuree = stats.get(monType);
+
+            // Ajout du temps de l'événement (Fin - Début)
+            Long laDuree =(monCursor.getLong(2) - monCursor.getLong(1))/1000/60;
+            maDuree += laDuree;
+
+            // Stockage
+            stats.remove(monType);
+            stats.put(monType, maDuree);
+
+            Log.w("afficherStats",
+                  "" + monCursor.getString(0) + " - " + new Date(monCursor.getLong(1)) + " - " + new Date(monCursor.getLong(2))
+                  + " => " + laDuree);
+        }
+
+        // Tri
+        Map<String, Long> stats2 = sortByValue(stats);
+
+        // Statistiques
+        for (HashMap.Entry<String,Long> entry : stats2.entrySet()) {
+            String key = entry.getKey();
+            Long value = entry.getValue();
+
+            //Log.e("stats", key + " -> " + (value/60));
+            TextView mesStats = (TextView) findViewById(R.id.texteStats);
+            mesStats.append(key + " -> " + value/60 + "\n");
+        }
+
+    }
+
+    /**
+     * Sort HashMap by Value
+     * https://www.mkyong.com/java/how-to-sort-a-map-in-java/
+     * @param unsortMap
+     * @return
+     */
+    private static Map<String, Long> sortByValue(Map<String, Long> unsortMap) {
+
+        // 1. Convert Map to List of Map
+        List<Map.Entry<String, Long>> list =
+                new LinkedList<Map.Entry<String, Long>>(unsortMap.entrySet());
+
+        // 2. Sort list with Collections.sort(), provide a custom Comparator
+        //    Try switch the o1 o2 position for a different order
+        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
+            public int compare(Map.Entry<String, Long> o1,
+                               Map.Entry<String, Long> o2) {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+
+        // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
+        Map<String, Long> sortedMap = new LinkedHashMap<String, Long>();
+        for (Map.Entry<String, Long> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
     }
 
 }

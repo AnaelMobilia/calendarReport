@@ -45,4 +45,11 @@
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"/>
 
+    <TextView
+        android:id="@+id/texteStats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listeCalendrier"
+        android:text="Statistiques..."/>
+
 </android.widget.RelativeLayout>
