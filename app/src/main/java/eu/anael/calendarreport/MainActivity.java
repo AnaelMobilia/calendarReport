@@ -19,6 +19,8 @@
 package eu.anael.calendarreport;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.pm.PackageManager;
@@ -37,6 +39,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -67,6 +70,15 @@ public class MainActivity extends AppCompatActivity {
     // ID du calendrier selectionné
     String[] idCalendrierVoulu;
 
+    // Gestion des dates
+    // MOIS en base 0 !
+    int debAnnee = 2017;
+    int debMois = 1;
+    int debJour = 1;
+    int finAnnee = 2017;
+    int finMois = 11;
+    int finJour = 31;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,6 +107,10 @@ public class MainActivity extends AppCompatActivity {
             Log.e("onCreate", "droits accès calendrier déjà autorisés");
             afficherListeCalendriers();
         }
+
+        // Mise à jour des bornes de dates
+        updateDateDeb();
+        updateDateFin();
     }
 
     @Override
@@ -202,6 +218,82 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Modification de la date de début - Clic sur boutton
+     *
+     * @param view
+     */
+    public void setDateDebut(View view) {
+        showDialog(10);
+    }
+
+    /**
+     * Modification de la date de fin - Clic sur boutton
+     *
+     * @param view
+     */
+    public void setDateFin(View view) {
+        showDialog(11);
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        if (id == 10) {
+            return new DatePickerDialog(this, dateListenerDebut, debAnnee, debMois, debJour);
+        } else if (id == 11) {
+            return new DatePickerDialog(this, dateListenerFin, finAnnee, finMois, finJour);
+        }
+        return null;
+    }
+
+    private DatePickerDialog.OnDateSetListener dateListenerDebut = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker arg0, int arg1, int arg2, int arg3) {
+            // arg1 = year
+            // arg2 = month
+            // arg3 = day
+            debAnnee = arg1;
+            debMois = arg2;
+            debJour = arg3;
+            // MàJ affichage
+            updateDateDeb();
+        }
+    };
+    private DatePickerDialog.OnDateSetListener dateListenerFin = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker arg0, int arg1, int arg2, int arg3) {
+            // arg1 = year
+            // arg2 = month
+            // arg3 = day
+            finAnnee = arg1;
+            finMois = arg2;
+            finJour = arg3;
+            // MàJ affichage
+            updateDateFin();
+        }
+    };
+
+    /**
+     * Mise à jour de la borne de début
+     */
+    private void updateDateDeb() {
+        TextView dateDeb = (TextView) findViewById(R.id.texteDateDebut);
+        dateDeb.setText("Du : " + debJour + "/" + (debMois + (int) 1) + "/" + debAnnee);
+        // Recalcul des stats
+        afficherStats();
+    }
+
+    /*
+     * Mise à jour de la borne de fin
+     */
+    private void updateDateFin() {
+        TextView dateDeb = (TextView) findViewById(R.id.texteDateFin);
+        dateDeb.setText("Au : " + finJour + "/" + (finMois + (int) 1) + "/" + finAnnee);
+        // Recalcul des stats
+        afficherStats();
+    }
+
+
+    /**
      * Affiche les stats du calendrier selectionné
      * Read : https://www.reddit.com/r/androiddev/comments/2da207/getting_events_from_a_specific_calendar_and/
      */
@@ -214,26 +306,26 @@ public class MainActivity extends AppCompatActivity {
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 
         Calendar beginTime = Calendar.getInstance();
-        beginTime.set(2016, Calendar.SEPTEMBER, 2, 8, 0);
+        beginTime.set(debAnnee, debMois, debJour, 8, 0);
         long startMills = beginTime.getTimeInMillis();
 
         Calendar endTime = Calendar.getInstance();
-        endTime.set(2017, Calendar.SEPTEMBER, 2, 20, 0);
+        endTime.set(finAnnee, finMois, finJour, 20, 0);
         long endMills = endTime.getTimeInMillis();
 
         ContentUris.appendId(builder, startMills);
         ContentUris.appendId(builder, endMills);
 
         // Récupération de la liste des événements
-        Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION, CalendarContract.Instances.CALENDAR_ID + " = ?",
-                                                    idCalendrierVoulu, null);
+        Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
+                                                    CalendarContract.Instances.CALENDAR_ID + " = ?", idCalendrierVoulu, null);
         HashMap<String, Long> stats = new HashMap<String, Long>();
         while (monCursor.moveToNext()) {
             // Type de l'événement
             String monType = monCursor.getString(0);
 
             // Création de la ligne si inexistante
-            if(!stats.containsKey(monType)) {
+            if (!stats.containsKey(monType)) {
                 stats.put(monType, 0L);
             }
 
@@ -241,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
             Long maDuree = stats.get(monType);
 
             // Ajout du temps de l'événement (Fin - Début)
-            Long laDuree =(monCursor.getLong(2) - monCursor.getLong(1))/1000/60;
+            Long laDuree = (monCursor.getLong(2) - monCursor.getLong(1)) / 1000 / 60;
             maDuree += laDuree;
 
             // Stockage
@@ -259,34 +351,31 @@ public class MainActivity extends AppCompatActivity {
 
         // Statistiques
         TextView mesStats = (TextView) findViewById(R.id.texteStats);
-        mesStats.clearComposingText();
-        for (HashMap.Entry<String,Long> entry : stats2.entrySet()) {
+        mesStats.setText("");
+        for (HashMap.Entry<String, Long> entry : stats2.entrySet()) {
             String key = entry.getKey();
             Long value = entry.getValue();
 
-            //Log.e("stats", key + " -> " + (value/60));
-            mesStats.append(key + " -> " + value/60 + "\n");
+            mesStats.append(key + " -> " + value / 60 + "\n");
         }
-
     }
 
     /**
      * Sort HashMap by Value
      * https://www.mkyong.com/java/how-to-sort-a-map-in-java/
+     *
      * @param unsortMap
      * @return
      */
     private static Map<String, Long> sortByValue(Map<String, Long> unsortMap) {
 
         // 1. Convert Map to List of Map
-        List<Map.Entry<String, Long>> list =
-                new LinkedList<Map.Entry<String, Long>>(unsortMap.entrySet());
+        List<Map.Entry<String, Long>> list = new LinkedList<Map.Entry<String, Long>>(unsortMap.entrySet());
 
         // 2. Sort list with Collections.sort(), provide a custom Comparator
         //    Try switch the o1 o2 position for a different order
         Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
-            public int compare(Map.Entry<String, Long> o1,
-                               Map.Entry<String, Long> o2) {
+            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
                 return (o2.getValue()).compareTo(o1.getValue());
             }
         });
@@ -299,5 +388,4 @@ public class MainActivity extends AppCompatActivity {
 
         return sortedMap;
     }
-
 }
