@@ -76,9 +76,9 @@ public class MainActivity extends AppCompatActivity {
     int debAnnee = 2017;
     int debMois = 1;
     int debJour = 1;
-    int finAnnee = 2017;
-    int finMois = 11;
-    int finJour = 31;
+    int finAnnee = Calendar.getInstance().get(Calendar.YEAR);
+    int finMois = Calendar.getInstance().get(Calendar.MONTH);
+    int finJour = Calendar.getInstance().get(Calendar.DATE);
 
     // Type de tri
     boolean triByDuree = true;
@@ -335,21 +335,21 @@ public class MainActivity extends AppCompatActivity {
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
                                                     CalendarContract.Instances.CALENDAR_ID + " = ?", idCalendrierVoulu, null);
-        HashMap<String, Long> stats = new HashMap<String, Long>();
+        HashMap<String, Integer> stats = new HashMap<String, Integer>();
         while (monCursor.moveToNext()) {
             // Type de l'événement
             String monType = monCursor.getString(0);
 
             // Création de la ligne si inexistante
             if (!stats.containsKey(monType)) {
-                stats.put(monType, 0L);
+                stats.put(monType, 0);
             }
 
             // Durée déjà existante
-            Long maDuree = stats.get(monType);
+            int maDuree = stats.get(monType);
 
-            // Ajout du temps de l'événement (Fin - Début)
-            Long laDuree = (monCursor.getLong(2) - monCursor.getLong(1)) / 1000 / 60;
+            // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
+            int laDuree = (monCursor.getInt(2) - monCursor.getInt(1)) / 1000 / 60;
             maDuree += laDuree;
 
             // Stockage
@@ -357,29 +357,43 @@ public class MainActivity extends AppCompatActivity {
             stats.put(monType, maDuree);
 
             Log.w("afficherStats",
-                  "" + monCursor.getString(0) + " - " + new Date(monCursor.getLong(1)) + " - " + new Date(monCursor.getLong(2))
+                  "" + monCursor.getString(0) + " - " + new Date(monCursor.getInt(1)) + " - " + new Date(monCursor.getInt(2))
                   + " => " + laDuree);
         }
         monCursor.close();
 
         // Gestion des tris
-        Map<String, Long> stats2;
+        Map<String, Integer> stats2;
         if (triByDuree) {
             // Tri par durée DESC
             stats2 = sortByValue(stats);
         } else {
             // tri par nom ASC
-            stats2 = new TreeMap<String, Long>(stats);
+            stats2 = new TreeMap<String, Integer>(stats);
+        }
+
+        // Calcul du temps total
+        int dureeTotale = 0;
+        for (int uneDuree : stats2.values()) {
+            // On additionne...
+            dureeTotale += uneDuree;
         }
 
         // Statistiques
         TextView mesStats = (TextView) findViewById(R.id.texteStats);
         mesStats.setText("");
-        for (HashMap.Entry<String, Long> entry : stats2.entrySet()) {
+        for (HashMap.Entry<String, Integer> entry : stats2.entrySet()) {
+            // Nom de l'item
             String key = entry.getKey();
-            Long value = entry.getValue();
+            // Durée totale
+            int value = entry.getValue();
+            // Calcul du %age
+            float percent = (float) value / (float) dureeTotale * 100.0f;
+            Log.e("zz", key + "" + value);
+            Log.e("zz", "" + dureeTotale);
+            Log.e("zz", "" + percent);
 
-            mesStats.append(key + " -> " + value / 60 + "\n");
+            mesStats.append(key + " -> " + Math.round(value / 60.0f) + " (" + Math.round(percent) + "%)\n");
         }
     }
 
@@ -390,22 +404,22 @@ public class MainActivity extends AppCompatActivity {
      * @param unsortMap
      * @return
      */
-    private static Map<String, Long> sortByValue(Map<String, Long> unsortMap) {
+    private static Map<String, Integer> sortByValue(Map<String, Integer> unsortMap) {
 
         // 1. Convert Map to List of Map
-        List<Map.Entry<String, Long>> list = new LinkedList<Map.Entry<String, Long>>(unsortMap.entrySet());
+        List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
 
         // 2. Sort list with Collections.sort(), provide a custom Comparator
         //    Try switch the o1 o2 position for a different order
-        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
-            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
                 return (o2.getValue()).compareTo(o1.getValue());
             }
         });
 
         // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
-        Map<String, Long> sortedMap = new LinkedHashMap<String, Long>();
-        for (Map.Entry<String, Long> entry : list) {
+        Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+        for (Map.Entry<String, Integer> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
 
