@@ -389,9 +389,6 @@ public class MainActivity extends AppCompatActivity {
             int value = entry.getValue();
             // Calcul du %age
             float percent = (float) value / (float) dureeTotale * 100.0f;
-            Log.e("zz", key + "" + value);
-            Log.e("zz", "" + dureeTotale);
-            Log.e("zz", "" + percent);
 
             mesStats.append(key + " -> " + Math.round(value / 60.0f) + " (" + Math.round(percent) + "%)\n");
         }
