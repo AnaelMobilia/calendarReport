@@ -56,9 +56,9 @@
         android:id="@+id/buttonDateDebut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/texteDateDebut"
         android:layout_alignBottom="@id/texteDateDebut"
         android:layout_alignTop="@id/texteDateDebut"
+        android:layout_toRightOf="@id/texteDateDebut"
         android:onClick="setDateDebut"
         android:text="xx"/>
 
@@ -78,6 +78,15 @@
         android:layout_toRightOf="@id/texteDateFin"
         android:onClick="setDateFin"
         android:text="xx"/>
+
+    <Button
+        android:id="@+id/buttonTri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/listeCalendrier"
+        android:onClick="setTri"
+        android:text="Changer tri"/>
 
     <ScrollView
         android:layout_width="match_parent"

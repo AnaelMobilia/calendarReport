@@ -53,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -78,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
     int finAnnee = 2017;
     int finMois = 11;
     int finJour = 31;
+
+    // Type de tri
+    boolean triByDuree = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -235,6 +239,18 @@ public class MainActivity extends AppCompatActivity {
         showDialog(11);
     }
 
+    /**
+     * Modification du tri - Clic sur le boutton
+     *
+     * @param view
+     */
+    public void setTri(View view) {
+        // Inversion du tri
+        triByDuree = !triByDuree;
+        // MàJ de l'affichage
+        afficherStats();
+    }
+
     @Override
     protected Dialog onCreateDialog(int id) {
         if (id == 10) {
@@ -346,8 +362,15 @@ public class MainActivity extends AppCompatActivity {
         }
         monCursor.close();
 
-        // Tri
-        Map<String, Long> stats2 = sortByValue(stats);
+        // Gestion des tris
+        Map<String, Long> stats2;
+        if (triByDuree) {
+            // Tri par durée DESC
+            stats2 = sortByValue(stats);
+        } else {
+            // tri par nom ASC
+            stats2 = new TreeMap<String, Long>(stats);
+        }
 
         // Statistiques
         TextView mesStats = (TextView) findViewById(R.id.texteStats);
