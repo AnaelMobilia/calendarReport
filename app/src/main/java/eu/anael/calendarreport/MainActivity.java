@@ -58,13 +58,16 @@ public class MainActivity extends AppCompatActivity {
 
     // Type de tri
     boolean triByDuree = true;
-    FloatingActionButton monTri;
+    FloatingActionButton fabTri;
+
+    // Group By
+    boolean groupBy = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Chargement des données sur les calendriers
@@ -81,11 +84,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Action du bouton de tri
-        monTri = findViewById(R.id.iconeTri);
-        monTri.setOnClickListener(new View.OnClickListener() {
+        fabTri = findViewById(R.id.iconeTri);
+        fabTri.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 setTri();
+            }
+        });
+
+        FloatingActionButton groupBy = findViewById(R.id.iconeGroupBy);
+        groupBy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setGroupby();
             }
         });
     }
@@ -151,15 +162,26 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Modification du tri - Clic sur le boutton
      */
-    public void setTri() {
+    private void setTri() {
         // Inversion du tri
         triByDuree = !triByDuree;
         // MàJ de l'icône
         if (triByDuree) {
-            monTri.setImageResource(android.R.drawable.ic_menu_sort_alphabetically);
+            fabTri.setImageResource(android.R.drawable.ic_menu_sort_alphabetically);
         } else {
-            monTri.setImageResource(android.R.drawable.ic_menu_sort_by_size);
+            fabTri.setImageResource(android.R.drawable.ic_menu_sort_by_size);
         }
+        // MàJ de l'affichage
+        afficherStats();
+    }
+
+    /**
+     * Modification de l'affichage - Group By
+     */
+    private void setGroupby() {
+        // Inversion du Group By
+        groupBy = !groupBy;
+
         // MàJ de l'affichage
         afficherStats();
     }
@@ -168,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
      * Affiche les stats du calendrier selectionné
      * Read : https://www.reddit.com/r/androiddev/comments/2da207/getting_events_from_a_specific_calendar_and/
      */
-    public void afficherStats() {
+    private void afficherStats() {
         // Données à récupérer sur les événements du calendrier
         String[] EVENT_PROJECTION = new String[]{ CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN,
                 CalendarContract.Instances.END };
@@ -177,15 +199,15 @@ public class MainActivity extends AppCompatActivity {
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 
         Calendar beginTime = Calendar.getInstance();
-        beginTime.set(Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutAn),
-                      Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutMois),
-                      Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
+        beginTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn),
+                      Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois),
+                      Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
         long startMills = beginTime.getTimeInMillis();
 
         Calendar endTime = Calendar.getInstance();
-        endTime.set(Utils.getPref(getApplicationContext(), R.string.idOptionDateFinAn),
-                    Utils.getPref(getApplicationContext(), R.string.idOptionDateFinMois),
-                    Utils.getPref(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
+        endTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinAn),
+                    Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois),
+                    Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
         long endMills = endTime.getTimeInMillis();
 
         ContentUris.appendId(builder, startMills);
@@ -194,11 +216,23 @@ public class MainActivity extends AppCompatActivity {
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
                                                     CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{ String.valueOf(
-                        Utils.getPref(getApplicationContext(), R.string.idOptionCalendrier)) }, null);
+                        Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier)) }, null);
         HashMap<String, Integer> stats = new HashMap<String, Integer>();
         while (monCursor.moveToNext()) {
             // Type de l'événement
             String monType = monCursor.getString(0);
+
+            // Gestion du groupBy
+            if (groupBy) {
+                // Réduction du type de l'événement à sa partie avant ":"
+                int positionSeparateur = monType.indexOf(
+                        Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy));
+                // Si sous élément
+                if (positionSeparateur > 0) {
+                    // Je ne prends que le début + trim pour éviter les effets de bord...
+                    monType = monType.substring(0, positionSeparateur).trim();
+                }
+            }
 
             // Création de la ligne si inexistante
             if (!stats.containsKey(monType)) {

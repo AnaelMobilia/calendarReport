@@ -67,5 +67,15 @@
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_dropdown"/>
 
+    <TextView
+        android:id="@+id/texteSeparateurGroupBy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/optionDateFin"/>
+
+    <EditText
+        android:id="@+id/separateurGroupBy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

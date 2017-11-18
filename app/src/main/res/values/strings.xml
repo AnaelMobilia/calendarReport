@@ -29,9 +29,10 @@
     <!-- SettingsActivity -->
     <string name="title_activity_settings">Paramètres</string>
     <!-- Nom des options -->
-    <string name="optionCalendrier">Calendrier : </string>
-    <string name="optionDateDebut">Depuis le : </string>
+    <string name="optionCalendrier">Calendrier à utiliser : </string>
+    <string name="optionDateDebut">Evénements depuis le : </string>
     <string name="optionDateFin">Jusqu\'au : </string>
+    <string name="optionSeparateurGroupBy">Séparateur à utiliser pour la concaténation : </string>
     <!-- ID Options -->
     <string name="idOptionCalendrier">1</string>
     <string name="idOptionDateDebutAn">2</string>
@@ -40,5 +41,6 @@
     <string name="idOptionDateFinAn">5</string>
     <string name="idOptionDateFinMois">6</string>
     <string name="idOptionDateFinJour">7</string>
+    <string name="idOptionSeparateurGroupBy">8</string>
 
 </resources>

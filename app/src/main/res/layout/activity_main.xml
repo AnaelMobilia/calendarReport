@@ -51,7 +51,7 @@
         android:src="@android:drawable/ic_menu_sort_alphabetically"/>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/iconeCondensation"
+        android:id="@+id/iconeGroupBy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"

@@ -30,12 +30,15 @@ import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
@@ -63,10 +66,14 @@ public class SettingsActivity extends AppCompatActivity {
     int finMois;
     int finJour;
 
+    // Gestion du séparateur Group By
+    String separateur;
+
     // Objet GUI
     Spinner listeCalendriersSpinner;
     Button buttonDebut;
     Button buttonFin;
+    EditText texteSeparateur;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +94,7 @@ public class SettingsActivity extends AppCompatActivity {
                 // Mise à jour de l'ID du calendrier choisi
                 idCalendrierVoulu = idCalendriers[i];
                 // Préférence
-                Utils.setPref(getApplicationContext(), R.string.idOptionCalendrier, idCalendrierVoulu);
+                Utils.setPrefInt(getApplicationContext(), R.string.idOptionCalendrier, idCalendrierVoulu);
             }
 
             @Override
@@ -112,13 +119,35 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // Définition du listener pour le séparateur
+        texteSeparateur = findViewById(R.id.separateurGroupBy);
+        texteSeparateur.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Préférence
+                Utils.setPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy, charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         // Chargement des valeurs si déjà existantes
         initialiserDates();
         initialiserCalendrier();
+        initialiserSeparateurGroupBy();
 
         // Mise à jour de l'affichage
         updateAffichageDates();
         updateAffichageCalendrier();
+        updateAffichageSeparateurGroupBy();
     }
 
     /**
@@ -126,35 +155,35 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void initialiserDates() {
         // Début - par défaut 01/01/n-1
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutAn) != 0) {
-            debAnnee = Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutAn);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn) != 0) {
+            debAnnee = Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn);
         } else {
             debAnnee = Calendar.getInstance().get(Calendar.YEAR) - 1;
         }
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutMois) != 0) {
-            debMois = Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutMois);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois) != 0) {
+            debMois = Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois);
         } else {
             debMois = 0;
         }
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutJour) != 0) {
-            debJour = Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutJour);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour) != 0) {
+            debJour = Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour);
         } else {
             debJour = 1;
         }
 
         // Fin - par défaut : JJ/MM/YY
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionDateFinAn) != 0) {
-            finAnnee = Utils.getPref(getApplicationContext(), R.string.idOptionDateFinAn);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinAn) != 0) {
+            finAnnee = Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinAn);
         } else {
             finAnnee = Calendar.getInstance().get(Calendar.YEAR);
         }
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionDateFinMois) != 0) {
-            finMois = Utils.getPref(getApplicationContext(), R.string.idOptionDateFinMois);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois) != 0) {
+            finMois = Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois);
         } else {
             finMois = Calendar.getInstance().get(Calendar.MONTH);
         }
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionDateFinJour) != 0) {
-            finJour = Utils.getPref(getApplicationContext(), R.string.idOptionDateFinJour);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour) != 0) {
+            finJour = Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour);
         } else {
             finJour = Calendar.getInstance().get(Calendar.DATE);
         }
@@ -190,37 +219,44 @@ public class SettingsActivity extends AppCompatActivity {
         idCalendriers = listeIDCalendriers.toArray(new Integer[0]);
 
         // ID du calendrier choisi
-        if (Utils.getPref(getApplicationContext(), R.string.idOptionCalendrier) != 0) {
-            idCalendrierVoulu = Utils.getPref(getApplicationContext(), R.string.idOptionCalendrier);
+        if (Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier) != 0) {
+            idCalendrierVoulu = Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier);
         } else {
             idCalendrierVoulu = 0;
         }
     }
 
+    private void initialiserSeparateurGroupBy() {
+        if (!Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy).equals("")) {
+            separateur = Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy);
+        } else {
+            separateur = ":";
+        }
+    }
+
     /**
-     * Met à jour (GUI + préférence) les dates
+     * Mise à jour (GUI + préférence) les dates
      */
     private void updateAffichageDates() {
         // Date début - Affichage
         buttonDebut.setText(debJour + "/" + (debMois + (int) 1) + "/" + debAnnee);
         // Date début - Préférence
-        Utils.setPref(getApplicationContext(), R.string.idOptionDateDebutAn, debAnnee);
-        Utils.setPref(getApplicationContext(), R.string.idOptionDateDebutMois, debMois);
-        Utils.setPref(getApplicationContext(), R.string.idOptionDateDebutJour, debJour);
+        Utils.setPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn, debAnnee);
+        Utils.setPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois, debMois);
+        Utils.setPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour, debJour);
 
         // Date fin - Affichage
         buttonFin.setText(finJour + "/" + (finMois + (int) 1) + "/" + finAnnee);
         // Date fin - Préférence
-        Utils.setPref(getApplicationContext(), R.string.idOptionDateFinAn, finAnnee);
-        Utils.setPref(getApplicationContext(), R.string.idOptionDateFinMois, finMois);
-        Utils.setPref(getApplicationContext(), R.string.idOptionDateFinJour, finJour);
+        Utils.setPrefInt(getApplicationContext(), R.string.idOptionDateFinAn, finAnnee);
+        Utils.setPrefInt(getApplicationContext(), R.string.idOptionDateFinMois, finMois);
+        Utils.setPrefInt(getApplicationContext(), R.string.idOptionDateFinJour, finJour);
     }
 
     /**
-     * Met à jour (GUI + préférence) le calendrier
+     * Mise à jour (GUI + préférence) du calendrier
      */
     private void updateAffichageCalendrier() {
-        Log.e("onI - updaff", "START " + idCalendrierVoulu);
         // Injection des valeurs
         ArrayAdapter<String> monAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, lesCalendriers);
         // Affichage
@@ -243,6 +279,16 @@ public class SettingsActivity extends AppCompatActivity {
             // Sélection dans le spinner
             listeCalendriersSpinner.setSelection(monIndice);
         }
+    }
+
+    /**
+     * Mise à jour (GUI + préférence) du supérateur pour le group by
+     */
+    private void updateAffichageSeparateurGroupBy() {
+        // Injection de la valeur
+        texteSeparateur.setText(separateur);
+
+        Utils.setPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy, separateur);
     }
 
     @Override

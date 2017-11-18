@@ -29,7 +29,7 @@ public class Utils {
      * @param idOption     id de l'option (Cf R.string.idOption...)
      * @param valeurOption
      */
-    public static void setPref(Context unContext, int idOption, int valeurOption) {
+    public static void setPrefInt(Context unContext, int idOption, int valeurOption) {
         // Initialisation du preferenceManager
         SharedPreferences mesPrefs = PreferenceManager.getDefaultSharedPreferences(unContext);
 
@@ -44,10 +44,38 @@ public class Utils {
      * @param idOption
      * @return
      */
-    public static int getPref(Context unContext, int idOption) {
+    public static int getPrefInt(Context unContext, int idOption) {
         // Initialisation du preferenceManager
         SharedPreferences mesPrefs = PreferenceManager.getDefaultSharedPreferences(unContext);
 
         return mesPrefs.getInt(unContext.getString(idOption), 0);
+    }
+
+    /**
+     * Enregistrer une préférence
+     *
+     * @param idOption     id de l'option (Cf R.string.idOption...)
+     * @param valeurOption
+     */
+    public static void setPrefString(Context unContext, int idOption, String valeurOption) {
+        // Initialisation du preferenceManager
+        SharedPreferences mesPrefs = PreferenceManager.getDefaultSharedPreferences(unContext);
+
+        SharedPreferences.Editor editor = mesPrefs.edit();
+        editor.putString(unContext.getString(idOption), valeurOption);
+        editor.apply();
+    }
+
+    /**
+     * Lire une préférence
+     *
+     * @param idOption
+     * @return
+     */
+    public static String getPrefString(Context unContext, int idOption) {
+        // Initialisation du preferenceManager
+        SharedPreferences mesPrefs = PreferenceManager.getDefaultSharedPreferences(unContext);
+
+        return mesPrefs.getString(unContext.getString(idOption), "");
     }
 }
