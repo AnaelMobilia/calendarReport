@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Type de tri
     boolean triByDuree = true;
+    FloatingActionButton monTri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Action du bouton de tri
-        FloatingActionButton monTri = findViewById(R.id.buttonTri);
+        monTri = findViewById(R.id.iconeTri);
         monTri.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -153,6 +154,12 @@ public class MainActivity extends AppCompatActivity {
     public void setTri() {
         // Inversion du tri
         triByDuree = !triByDuree;
+        // MàJ de l'icône
+        if (triByDuree) {
+            monTri.setImageResource(android.R.drawable.ic_menu_sort_alphabetically);
+        } else {
+            monTri.setImageResource(android.R.drawable.ic_menu_sort_by_size);
+        }
         // MàJ de l'affichage
         afficherStats();
     }
