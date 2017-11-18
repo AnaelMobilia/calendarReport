@@ -24,6 +24,7 @@
     <!-- MainActivity -->
     <string name="action_settings">Paramètres</string>
     <string name="sortChange">Tri modifié</string>
+    <string name="configRequise">Configurez l\'application pour afficher des données</string>
 
     <!-- SettingsActivity -->
     <string name="title_activity_settings">Paramètres</string>
