@@ -19,17 +19,15 @@
 package eu.anael.calendarreport;
 
 import android.Manifest;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -37,13 +35,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
-import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,21 +57,6 @@ public class MainActivity extends AppCompatActivity {
     ContentResolver monContentResolver;
     // URI
     Uri monURI = CalendarContract.Calendars.CONTENT_URI;
-    // Liste des calendriers de l'appareil
-    String[] lesCalendriers;
-    // ID des calendriers
-    String[] idCalendriers;
-    // ID du calendrier selectionné
-    String[] idCalendrierVoulu;
-
-    // Gestion des dates
-    // MOIS en base 0 !
-    int debAnnee = 2017;
-    int debMois = 1;
-    int debJour = 1;
-    int finAnnee = Calendar.getInstance().get(Calendar.YEAR);
-    int finMois = Calendar.getInstance().get(Calendar.MONTH);
-    int finJour = Calendar.getInstance().get(Calendar.DATE);
 
     // Type de tri
     boolean triByDuree = true;
@@ -90,15 +68,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-            }
-        });
-
-
         // Chargement des données sur les calendriers
         monContentResolver = getContentResolver();
 
@@ -109,12 +78,17 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_CALENDAR }, DROIT_LECTURE_CALENDRIER);
         } else {
             Log.e("onCreate", "droits accès calendrier déjà autorisés");
-            afficherListeCalendriers();
+            afficherStats();
         }
 
-        // Mise à jour des bornes de dates
-        updateDateDeb();
-        updateDateFin();
+        // Action du bouton de tri
+        FloatingActionButton monTri = (FloatingActionButton) findViewById(R.id.buttonTri);
+        monTri.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setTri();
+            }
+        });
     }
 
     @Override
@@ -131,8 +105,11 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            // Lancement de la configuration
+            Intent monIntent = new Intent(this, SettingsActivity.class);
+            startActivity(monIntent);
+
             return true;
         }
 
@@ -154,11 +131,10 @@ public class MainActivity extends AppCompatActivity {
             case DROIT_LECTURE_CALENDRIER: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.e("onRequestPermissionsRes", "OKKKK - DROIT_LECTURE_CALENDRIER");
+                    Log.e("onRequestPermissionsRes", "OK - DROIT_LECTURE_CALENDRIER");
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-
-                    afficherListeCalendriers();
+                    afficherStats();
                 } else {
 
                     Log.e("onRequestPermissionsRes", "Echec - DROIT_LECTURE_CALENDRIER");
@@ -173,141 +149,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    /**
-     * Peuplement de la liste des calendriers
-     */
-    public void afficherListeCalendriers() {
-        // Données à récupérer sur les calendriers
-        String[] EVENT_PROJECTION = new String[]{ CalendarContract.Calendars._ID, CalendarContract.Calendars
-                .CALENDAR_DISPLAY_NAME };
-
-        // Récupération de la liste des calendriers
-        Cursor monCursor = monContentResolver.query(monURI, EVENT_PROJECTION, null, null, null);
-        ArrayList<String> listeCalendriers = new ArrayList<>();
-        ArrayList<String> listeIDCalendriers = new ArrayList<>();
-        while (monCursor.moveToNext()) {
-            // ID
-            listeIDCalendriers.add(String.valueOf(monCursor.getInt(0)));
-            // Nom d'affichage
-            listeCalendriers.add(monCursor.getString(1));
-        }
-        monCursor.close();
-        lesCalendriers = listeCalendriers.toArray(new String[0]);
-        idCalendriers = listeIDCalendriers.toArray(new String[0]);
-
-        // Récupération de l'objet graphique
-        Spinner listeCalendriersSpinner = (Spinner) findViewById(R.id.listeCalendrier);
-        // Injection des valeurs
-        ArrayAdapter<String> monAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, lesCalendriers);
-        // Affichage
-        listeCalendriersSpinner.setAdapter(monAdapter);
-
-        // Gestion de la sélection
-        listeCalendriersSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.w("onItemSelectedListener", lesCalendriers[i] + " -> " + idCalendriers[i]);
-                // Mise à jour de l'ID du calendrier choisi
-                idCalendrierVoulu = new String[]{ idCalendriers[i] };
-                // Lance l'affichage des stats
-                afficherStats();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-    }
-
-    /**
-     * Modification de la date de début - Clic sur boutton
-     *
-     * @param view
-     */
-    public void setDateDebut(View view) {
-        showDialog(10);
-    }
-
-    /**
-     * Modification de la date de fin - Clic sur boutton
-     *
-     * @param view
-     */
-    public void setDateFin(View view) {
-        showDialog(11);
-    }
-
     /**
      * Modification du tri - Clic sur le boutton
-     *
-     * @param view
      */
-    public void setTri(View view) {
+    public void setTri() {
         // Inversion du tri
         triByDuree = !triByDuree;
         // MàJ de l'affichage
         afficherStats();
     }
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        if (id == 10) {
-            return new DatePickerDialog(this, dateListenerDebut, debAnnee, debMois, debJour);
-        } else if (id == 11) {
-            return new DatePickerDialog(this, dateListenerFin, finAnnee, finMois, finJour);
-        }
-        return null;
-    }
-
-    private DatePickerDialog.OnDateSetListener dateListenerDebut = new DatePickerDialog.OnDateSetListener() {
-        @Override
-        public void onDateSet(DatePicker arg0, int arg1, int arg2, int arg3) {
-            // arg1 = year
-            // arg2 = month
-            // arg3 = day
-            debAnnee = arg1;
-            debMois = arg2;
-            debJour = arg3;
-            // MàJ affichage
-            updateDateDeb();
-        }
-    };
-    private DatePickerDialog.OnDateSetListener dateListenerFin = new DatePickerDialog.OnDateSetListener() {
-        @Override
-        public void onDateSet(DatePicker arg0, int arg1, int arg2, int arg3) {
-            // arg1 = year
-            // arg2 = month
-            // arg3 = day
-            finAnnee = arg1;
-            finMois = arg2;
-            finJour = arg3;
-            // MàJ affichage
-            updateDateFin();
-        }
-    };
-
-    /**
-     * Mise à jour de la borne de début
-     */
-    private void updateDateDeb() {
-        TextView dateDeb = (TextView) findViewById(R.id.texteDateDebut);
-        dateDeb.setText("Du : " + debJour + "/" + (debMois + (int) 1) + "/" + debAnnee);
-        // Recalcul des stats
-        afficherStats();
-    }
-
-    /*
-     * Mise à jour de la borne de fin
-     */
-    private void updateDateFin() {
-        TextView dateDeb = (TextView) findViewById(R.id.texteDateFin);
-        dateDeb.setText("Au : " + finJour + "/" + (finMois + (int) 1) + "/" + finAnnee);
-        // Recalcul des stats
-        afficherStats();
-    }
-
 
     /**
      * Affiche les stats du calendrier selectionné
@@ -322,11 +172,15 @@ public class MainActivity extends AppCompatActivity {
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 
         Calendar beginTime = Calendar.getInstance();
-        beginTime.set(debAnnee, debMois, debJour, 8, 0);
+        beginTime.set(Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutAn),
+                      Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutMois),
+                      Utils.getPref(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
         long startMills = beginTime.getTimeInMillis();
 
         Calendar endTime = Calendar.getInstance();
-        endTime.set(finAnnee, finMois, finJour, 20, 0);
+        endTime.set(Utils.getPref(getApplicationContext(), R.string.idOptionDateFinAn),
+                    Utils.getPref(getApplicationContext(), R.string.idOptionDateFinMois),
+                    Utils.getPref(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
         long endMills = endTime.getTimeInMillis();
 
         ContentUris.appendId(builder, startMills);
@@ -334,7 +188,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
-                                                    CalendarContract.Instances.CALENDAR_ID + " = ?", idCalendrierVoulu, null);
+                                                    CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{ String.valueOf(
+                        Utils.getPref(getApplicationContext(), R.string.idOptionCalendrier)) }, null);
         HashMap<String, Integer> stats = new HashMap<String, Integer>();
         while (monCursor.moveToNext()) {
             // Type de l'événement

@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
 /*
 * Copyright 2017 Anael Mobilia
 *
@@ -24,7 +25,6 @@
     <!-- Accès au calendrier en LS -->
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -41,6 +41,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity android:name=".Utils">
         </activity>
     </application>
 

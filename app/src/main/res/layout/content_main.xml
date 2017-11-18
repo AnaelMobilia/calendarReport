@@ -28,70 +28,9 @@
     tools:context="eu.anael.calendarreport.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:id="@+id/texteSpinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/listeCalendrier"
-        android:layout_alignParentTop="true"
-        android:text="Calendrier : "/>
-
-    <Spinner
-        android:id="@+id/listeCalendrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/texteSpinner"
-        android:layout_toRightOf="@id/texteSpinner"
-        android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown"/>
-
-    <TextView
-        android:id="@+id/texteDateDebut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/texteSpinner"
-        android:text="De : "/>
-
-    <Button
-        android:id="@+id/buttonDateDebut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/texteDateDebut"
-        android:layout_alignTop="@id/texteDateDebut"
-        android:layout_toRightOf="@id/texteDateDebut"
-        android:onClick="setDateDebut"
-        android:text="xx"/>
-
-    <TextView
-        android:id="@+id/texteDateFin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/texteDateDebut"
-        android:text="A : "/>
-
-    <Button
-        android:id="@+id/buttonDateFin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/texteDateFin"
-        android:layout_alignTop="@id/texteDateFin"
-        android:layout_toRightOf="@id/texteDateFin"
-        android:onClick="setDateFin"
-        android:text="xx"/>
-
-    <Button
-        android:id="@+id/buttonTri"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/listeCalendrier"
-        android:onClick="setTri"
-        android:text="Changer tri"/>
-
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/texteDateFin">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/texteStats"

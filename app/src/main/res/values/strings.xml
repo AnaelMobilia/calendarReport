@@ -20,5 +20,24 @@
 -->
 <resources>
     <string name="app_name">Calendar Report</string>
-    <string name="action_settings">Settings</string>
+
+    <!-- MainActivity -->
+    <string name="action_settings">Paramètres</string>
+    <string name="sortChange">Tri modifié</string>
+
+    <!-- SettingsActivity -->
+    <string name="title_activity_settings">Paramètres</string>
+    <!-- Nom des options -->
+    <string name="optionCalendrier">Calendrier : </string>
+    <string name="optionDateDebut">Depuis le : </string>
+    <string name="optionDateFin">Jusqu\'au : </string>
+    <!-- ID Options -->
+    <string name="idOptionCalendrier">1</string>
+    <string name="idOptionDateDebutAn">2</string>
+    <string name="idOptionDateDebutMois">3</string>
+    <string name="idOptionDateDebutJour">4</string>
+    <string name="idOptionDateFinAn">5</string>
+    <string name="idOptionDateFinMois">6</string>
+    <string name="idOptionDateFinJour">7</string>
+
 </resources>
