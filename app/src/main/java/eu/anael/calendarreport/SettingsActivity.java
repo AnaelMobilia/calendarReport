@@ -72,14 +72,14 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Bouton back
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Définition du listener pour les calendriers
-        listeCalendriersSpinner = (Spinner) findViewById(R.id.listeCalendrier);
+        listeCalendriersSpinner = findViewById(R.id.listeCalendrier);
         listeCalendriersSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -97,14 +97,14 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // Définition du listener pour les datePicket
-        buttonDebut = (Button) findViewById(R.id.buttonDateDebut);
+        buttonDebut = findViewById(R.id.buttonDateDebut);
         buttonDebut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showDialog(10);
             }
         });
-        buttonFin = (Button) findViewById(R.id.buttonDateFin);
+        buttonFin = findViewById(R.id.buttonDateFin);
         buttonFin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

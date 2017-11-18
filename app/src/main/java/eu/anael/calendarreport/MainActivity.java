@@ -55,8 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
     // Content Resolver
     ContentResolver monContentResolver;
-    // URI
-    Uri monURI = CalendarContract.Calendars.CONTENT_URI;
 
     // Type de tri
     boolean triByDuree = true;
@@ -82,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Action du bouton de tri
-        FloatingActionButton monTri = (FloatingActionButton) findViewById(R.id.buttonTri);
+        FloatingActionButton monTri = findViewById(R.id.buttonTri);
         monTri.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
