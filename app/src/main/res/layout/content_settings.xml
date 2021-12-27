@@ -71,7 +71,7 @@
         android:id="@+id/texteSeparateurGroupBy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/optionDateFin"/>
+        android:text="@string/optionSeparateurGroupBy"/>
 
     <EditText
         android:id="@+id/separateurGroupBy"
