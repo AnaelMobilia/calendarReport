@@ -27,10 +27,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             Log.e("onCreate", "demande des droits accès calendrier");
             // Sinon, demande des droits
-            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_CALENDAR }, DROIT_LECTURE_CALENDRIER);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CALENDAR}, DROIT_LECTURE_CALENDRIER);
         } else {
             Log.e("onCreate", "droits accès calendrier déjà autorisés");
             afficherStats();
@@ -192,22 +192,22 @@ public class MainActivity extends AppCompatActivity {
      */
     private void afficherStats() {
         // Données à récupérer sur les événements du calendrier
-        String[] EVENT_PROJECTION = new String[]{ CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN,
-                CalendarContract.Instances.END };
+        String[] EVENT_PROJECTION = new String[]{CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN,
+                CalendarContract.Instances.END, CalendarContract.Instances.ORGANIZER};
 
         // Filtre sur les dates
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 
         Calendar beginTime = Calendar.getInstance();
         beginTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn),
-                      Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois),
-                      Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
+                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois),
+                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
         long startMills = beginTime.getTimeInMillis();
 
         Calendar endTime = Calendar.getInstance();
         endTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinAn),
-                    Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois),
-                    Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
+                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois),
+                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
         long endMills = endTime.getTimeInMillis();
 
         ContentUris.appendId(builder, startMills);
@@ -215,45 +215,52 @@ public class MainActivity extends AppCompatActivity {
 
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
-                                                    CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{ String.valueOf(
-                        Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier)) }, null);
+                CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(
+                        Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
         HashMap<String, Integer> stats = new HashMap<String, Integer>();
         while (monCursor.moveToNext()) {
             // Type de l'événement
             String monType = monCursor.getString(0);
 
-            // Gestion du groupBy
-            if (groupBy) {
-                // Réduction du type de l'événement à sa partie avant ":"
-                int positionSeparateur = monType.indexOf(
-                        Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy));
-                // Si sous élément
-                if (positionSeparateur > 0) {
-                    // Je ne prends que le début + trim pour éviter les effets de bord...
-                    monType = monType.substring(0, positionSeparateur).trim();
+            String owner = monCursor.getString(3);
+            Log.w("Owner : ", owner.toLowerCase().trim());
+            // je ne prends que les rdv que j'ai créé => GTA
+            //if (owner.toLowerCase().trim().contains("xxx@example.com")) {
+            if(true) {
+                // Gestion du groupBy
+                if (groupBy) {
+                    // Réduction du type de l'événement à sa partie avant ":"
+                    int positionSeparateur = monType.indexOf(
+                            Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy));
+                    // Si sous élément
+                    if (positionSeparateur > 0) {
+                        // Je ne prends que le début + trim pour éviter les effets de bord...
+                        monType = monType.substring(0, positionSeparateur).trim();
+                    }
                 }
+
+                // Création de la ligne si inexistante
+                if (!stats.containsKey(monType)) {
+                    stats.put(monType, 0);
+                }
+
+                // Durée déjà existante
+                int maDuree = stats.get(monType);
+
+                // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
+                int laDuree = (monCursor.getInt(2) - monCursor.getInt(1)) / 1000 / 60;
+                maDuree += laDuree;
+
+                // Stockage
+                stats.remove(monType);
+                stats.put(monType, maDuree);
+
+                Log.w("afficherStats",
+                        "" + monCursor.getString(0) + " - " + new Date(monCursor.getInt(1)) + " - " + new Date(monCursor.getInt(2))
+                                + " => " + laDuree);
             }
-
-            // Création de la ligne si inexistante
-            if (!stats.containsKey(monType)) {
-                stats.put(monType, 0);
-            }
-
-            // Durée déjà existante
-            int maDuree = stats.get(monType);
-
-            // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
-            int laDuree = (monCursor.getInt(2) - monCursor.getInt(1)) / 1000 / 60;
-            maDuree += laDuree;
-
-            // Stockage
-            stats.remove(monType);
-            stats.put(monType, maDuree);
-
-            Log.w("afficherStats",
-                  "" + monCursor.getString(0) + " - " + new Date(monCursor.getInt(1)) + " - " + new Date(monCursor.getInt(2))
-                  + " => " + laDuree);
         }
+
         monCursor.close();
 
         // Gestion des tris
