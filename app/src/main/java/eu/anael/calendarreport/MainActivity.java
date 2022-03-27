@@ -35,6 +35,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,6 +50,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -219,6 +221,11 @@ public class MainActivity extends AppCompatActivity {
         ContentUris.appendId(builder, startMills);
         ContentUris.appendId(builder, endMills);
 
+        // Un simple calendrier FR
+        Calendar monCalendar = Calendar.getInstance(Locale.FRANCE);
+        // Nb de jours travaillés
+        HashMap<String, Integer> nbJoursTravailles = new HashMap<>();
+
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
                 CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(
@@ -273,6 +280,17 @@ public class MainActivity extends AppCompatActivity {
                 Log.w("afficherStats",
                         "" + monCursor.getString(0) + " - " + new Date(monCursor.getInt(1)) + " - " + new Date(monCursor.getInt(2))
                                 + " => " + laDuree);
+
+                // Calcul du nombre de jours travaillés
+                // TODO:: calculer sur une période (ex: tâche sur 3 jours)
+                // Début
+                monCalendar.setTimeInMillis(monCursor.getInt(1));
+                String date = DateFormat.format("dd-MM-yyyy", monCalendar).toString();
+                nbJoursTravailles.put(date, 1);
+                // Fin
+                monCalendar.setTimeInMillis(monCursor.getInt(2));
+                date = DateFormat.format("dd-MM-yyyy", monCalendar).toString();
+                nbJoursTravailles.put(date, 1);
             }
         }
 
@@ -309,7 +327,11 @@ public class MainActivity extends AppCompatActivity {
             mesStats.append(key + " -> " + Math.round(value / 60.0f) + " (" + Math.round(percent) + "%)\n");
         }
         // Affichage du total
-        mesStats.append("**Total** : " + dureeTotale + "h");
+        mesStats.append("**Total** : " + Math.round(dureeTotale / 60.0f) + "h\n");
+        // Affichage du nombre de jours
+        mesStats.append("**Nb jours travaillés** : " + nbJoursTravailles.size() + "\n");
+        // Temps de travail moyen
+        mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", ((dureeTotale / 60.0f) / nbJoursTravailles.size())) + "h/j\n");
     }
 
     /**
