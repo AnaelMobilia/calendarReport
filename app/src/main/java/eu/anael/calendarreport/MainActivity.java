@@ -27,10 +27,13 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -228,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
             Log.w("Owner : ", owner.toLowerCase().trim());
             // je ne prends que les rdv que j'ai créé => GTA
             //if (owner.toLowerCase().trim().contains("xxx@example.com")) {
-            if(true) {
+            if (true) {
                 // Gestion du groupBy
                 if (groupBy) {
                     // Réduction du type de l'événement à sa partie avant ":"
@@ -295,6 +298,8 @@ public class MainActivity extends AppCompatActivity {
 
             mesStats.append(key + " -> " + Math.round(value / 60.0f) + " (" + Math.round(percent) + "%)\n");
         }
+        // Affichage du total
+        mesStats.append("**Total** : " + dureeTotale + "h");
     }
 
     /**
