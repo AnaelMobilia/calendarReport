@@ -24,6 +24,7 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -224,6 +225,15 @@ public class MainActivity extends AppCompatActivity {
                         Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
         HashMap<String, Integer> stats = new HashMap<>();
         while (monCursor.moveToNext()) {
+            // Si besoin d'un debug
+            //Log.e("xxx", "."+ DatabaseUtils.dumpCursorToString(monCursor));
+            //     35 {
+            //       title=Cat : Subcat
+            //       begin=1642593600000
+            //       end=1642613400000
+            //       organizer=xxx@example.com
+            //    }
+
             // Type de l'événement
             String monType = monCursor.getString(0);
 
@@ -249,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                     stats.put(monType, 0);
                 }
 
-                // Durée déjà existante
+                // Déjà une durée pour ce type là !
                 int maDuree = stats.get(monType);
 
                 // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
