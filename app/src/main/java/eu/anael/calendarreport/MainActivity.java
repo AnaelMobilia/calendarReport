@@ -135,7 +135,9 @@ public class MainActivity extends AppCompatActivity {
      * @param grantResults
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         switch (requestCode) {
             case DROIT_LECTURE_CALENDRIER: {
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
                 CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(
                         Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
-        HashMap<String, Integer> stats = new HashMap<String, Integer>();
+        HashMap<String, Integer> stats = new HashMap<>();
         while (monCursor.moveToNext()) {
             // Type de l'événement
             String monType = monCursor.getString(0);
@@ -270,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
             stats2 = sortByValue(stats);
         } else {
             // tri par nom ASC
-            stats2 = new TreeMap<String, Integer>(stats);
+            stats2 = new TreeMap<>(stats);
         }
 
         // Calcul du temps total
@@ -305,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
     private static Map<String, Integer> sortByValue(Map<String, Integer> unsortMap) {
 
         // 1. Convert Map to List of Map
-        List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+        List<Map.Entry<String, Integer>> list = new LinkedList<>(unsortMap.entrySet());
 
         // 2. Sort list with Collections.sort(), provide a custom Comparator
         //    Try switch the o1 o2 position for a different order
@@ -316,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
-        Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> sortedMap = new LinkedHashMap<>();
         for (Map.Entry<String, Integer> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }

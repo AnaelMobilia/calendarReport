@@ -258,7 +258,7 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void updateAffichageCalendrier() {
         // Injection des valeurs
-        ArrayAdapter<String> monAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, lesCalendriers);
+        ArrayAdapter<String> monAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, lesCalendriers);
         // Affichage
         listeCalendriersSpinner.setAdapter(monAdapter);
 
