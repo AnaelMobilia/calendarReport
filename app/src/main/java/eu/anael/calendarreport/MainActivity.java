@@ -269,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            // Calcul de la durée de l'événement
             int maDuree = 0;
             // Type d'événement déjà connu ?
             if (stats.containsKey(monType)) {
@@ -277,11 +278,9 @@ public class MainActivity extends AppCompatActivity {
                 // Suppression de la liste
                 stats.remove(monType);
             }
-
             // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
             Duration duration = Duration.between(dateDeb, dateFin);
             maDuree += duration.toMinutes();
-
             // Stockage
             stats.put(monType, maDuree);
             Log.w("afficherStats", monType + " - " + dateDeb + " - " + dateFin + " => " + duration.toMinutes());
