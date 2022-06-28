@@ -42,6 +42,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -270,27 +271,32 @@ public class MainActivity extends AppCompatActivity {
                 int maDuree = stats.get(monType);
 
                 // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
-                int laDuree = (monCursor.getInt(2) - monCursor.getInt(1)) / 1000 / 60;
+                int laDuree = (int) (monCursor.getLong(2) - monCursor.getLong(1)) /1000 / 60;
                 maDuree += laDuree;
 
                 // Stockage
                 stats.remove(monType);
                 stats.put(monType, maDuree);
 
+                Date dateDeb = new Date(monCursor.getLong(1));
+                Date dateFin = new Date(monCursor.getLong(2));
+
                 Log.w("afficherStats",
-                        "" + monCursor.getString(0) + " - " + new Date(monCursor.getInt(1)) + " - " + new Date(monCursor.getInt(2))
-                                + " => " + laDuree);
+                        "" + monCursor.getString(0) + " - " + dateDeb + " - " + dateFin + " => " + laDuree);
 
                 // Calcul du nombre de jours travaillés
                 // TODO:: calculer sur une période (ex: tâche sur 3 jours)
                 // Début
-                monCalendar.setTimeInMillis(monCursor.getInt(1));
-                String date = DateFormat.format("dd-MM-yyyy", monCalendar).toString();
-                nbJoursTravailles.put(date, 1);
+                SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy", Locale.FRANCE);
+
+                String dateDebString = dateFormater.format(dateDeb);
+                String dateFinString = dateFormater.format(dateFin);
+
+                nbJoursTravailles.put(dateDebString, 1);
+                Log.d("dateDebString", monCursor.getLong(1) + " -> " + dateDebString);
                 // Fin
-                monCalendar.setTimeInMillis(monCursor.getInt(2));
-                date = DateFormat.format("dd-MM-yyyy", monCalendar).toString();
-                nbJoursTravailles.put(date, 1);
+                nbJoursTravailles.put(dateFinString, 1);
+                Log.d("dateFinString", monCursor.getLong(2) + " -> " + dateFinString);
             }
         }
 
