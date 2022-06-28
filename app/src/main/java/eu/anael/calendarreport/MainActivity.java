@@ -45,6 +45,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -229,6 +230,9 @@ public class MainActivity extends AppCompatActivity {
         DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         // Nb de jours travaillés
         HashMap<String, Integer> nbJoursTravailles = new HashMap<>();
+        // Amplitude horaire quotidienne
+        HashMap<String, Integer> debutJournee = new HashMap<>();
+        HashMap<String, Integer> finJournee = new HashMap<>();
 
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
@@ -296,6 +300,46 @@ public class MainActivity extends AppCompatActivity {
                 // Passage au jour suivant (si sur plusieurs jours)
                 dateTmp.plusDays(1);
             }
+
+            // Calcul de l'amplitude horaire
+            // TODO :: prendre en charge les événements sur plusieurs jours
+            String dateDebString = dateDeb.format(dateFormater);
+            int minutesDebut = dateDeb.getHour() * 60 + dateDeb.getMinute();
+            boolean update = true;
+            // Déjà un enregistrement pour ce jour ?
+            if (debutJournee.containsKey(dateDebString)) {
+                // Récupération de la durée
+                int debutActuel = debutJournee.get(dateDebString);
+                // Le début est-il plus tôt que celui actuellement stocké ?
+                if (minutesDebut < debutActuel) {
+                    debutJournee.remove(dateDebString);
+                } else {
+                    update = false;
+                }
+            }
+            // Mise à jour
+            if (update) {
+                debutJournee.put(dateDebString, minutesDebut);
+            }
+
+            String dateFinString = dateFin.format(dateFormater);
+            int minutesFin = dateFin.getHour() * 60 + dateFin.getMinute();
+            update = true;
+            // Déjà un enregistrement pour ce jour ?
+            if (finJournee.containsKey(dateFinString)) {
+                // Récupération de la durée
+                int finActuelle = finJournee.get(dateFinString);
+                // La fin est-elle plus tard que celle actuellement stockée ?
+                if (minutesFin > finActuelle) {
+                    finJournee.remove(dateFinString);
+                } else {
+                    update = false;
+                }
+            }
+            // Mise à jour
+            if (update) {
+                finJournee.put(dateFinString, minutesFin);
+            }
         }
 
         monCursor.close();
@@ -317,6 +361,26 @@ public class MainActivity extends AppCompatActivity {
             dureeTotale += uneDuree;
         }
 
+        // Calcul des amplitudes
+        ArrayList<Integer> amplitudeJournaliere = new ArrayList<Integer>();
+        // Pour chaque journée...
+        for (String uneDate : debutJournee.keySet()) {
+            if (!finJournee.containsKey(uneDate)) {
+                Log.e("calcul des amplitudes", uneDate + " -> présente uniquement dans debutJournee !!" + debutJournee + " - " + finJournee);
+                continue;
+            }
+            // Amplitude de la journée
+            int amplitudeDuJour = finJournee.get(uneDate) - debutJournee.get(uneDate);
+            amplitudeJournaliere.add(amplitudeDuJour);
+        }
+
+        // Addition des amplitudes
+        int totalAmplitude = 0;
+        for (int uneDuree : amplitudeJournaliere) {
+            // On additionne...
+            totalAmplitude += uneDuree;
+        }
+
         // Statistiques
         TextView mesStats = (TextView) findViewById(R.id.texteStats);
         mesStats.setText("");
@@ -336,6 +400,8 @@ public class MainActivity extends AppCompatActivity {
         mesStats.append("**Nb jours travaillés** : " + nbJoursTravailles.size() + "\n");
         // Temps de travail moyen
         mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", ((dureeTotale / 60.0f) / nbJoursTravailles.size())) + "h/j\n");
+        // Amplitude horaire moyenne
+        mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", ((totalAmplitude / 60.0f) / nbJoursTravailles.size())) + "h/j\n");
     }
 
     /**
