@@ -24,7 +24,6 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -35,18 +34,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -224,6 +225,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Un simple calendrier FR
         Calendar monCalendar = Calendar.getInstance(Locale.FRANCE);
+        // Formatteur de dates
+        DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         // Nb de jours travaillés
         HashMap<String, Integer> nbJoursTravailles = new HashMap<>();
 
@@ -244,59 +247,55 @@ public class MainActivity extends AppCompatActivity {
 
             // Type de l'événement
             String monType = monCursor.getString(0);
-
+            // Début et fin
+            LocalDateTime dateDeb = LocalDateTime.ofInstant(Instant.ofEpochMilli(monCursor.getLong(1)), ZoneId.systemDefault());
+            LocalDateTime dateFin = LocalDateTime.ofInstant(Instant.ofEpochMilli(monCursor.getLong(2)), ZoneId.systemDefault());
+            // Propriétaire
             String owner = monCursor.getString(3);
-            Log.w("Owner : ", owner.toLowerCase().trim());
-            // je ne prends que les rdv que j'ai créé => GTA
-            //if (owner.toLowerCase().trim().contains("xxx@example.com")) {
-            if (true) {
-                // Gestion du groupBy
-                if (groupBy) {
-                    // Réduction du type de l'événement à sa partie avant ":"
-                    int positionSeparateur = monType.indexOf(
-                            Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy));
-                    // Si sous élément
-                    if (positionSeparateur > 0) {
-                        // Je ne prends que le début + trim pour éviter les effets de bord...
-                        monType = monType.substring(0, positionSeparateur).trim();
-                    }
+            //Log.w("Owner : ", owner.toLowerCase().trim());
+            // Filtrage sur l'organisateur
+            // if (! owner.toLowerCase().trim().contains("xxx@example.com")) {
+            //    continue;
+            // }
+
+            // Gestion du groupBy
+            if (groupBy) {
+                // Réduction du type de l'événement à sa partie avant ":"
+                int positionSeparateur = monType.indexOf(Utils.getPrefString(getApplicationContext(), R.string.idOptionSeparateurGroupBy));
+                // Si sous élément
+                if (positionSeparateur > 0) {
+                    // Je ne prends que le début + trim pour éviter les effets de bord...
+                    monType = monType.substring(0, positionSeparateur).trim();
                 }
+            }
 
-                // Création de la ligne si inexistante
-                if (!stats.containsKey(monType)) {
-                    stats.put(monType, 0);
-                }
-
-                // Déjà une durée pour ce type là !
-                int maDuree = stats.get(monType);
-
-                // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
-                int laDuree = (int) (monCursor.getLong(2) - monCursor.getLong(1)) /1000 / 60;
-                maDuree += laDuree;
-
-                // Stockage
+            int maDuree = 0;
+            // Type d'événement déjà connu ?
+            if (stats.containsKey(monType)) {
+                // Récupération de la durée
+                maDuree = stats.get(monType);
+                // Suppression de la liste
                 stats.remove(monType);
-                stats.put(monType, maDuree);
+            }
 
-                Date dateDeb = new Date(monCursor.getLong(1));
-                Date dateFin = new Date(monCursor.getLong(2));
+            // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
+            Duration duration = Duration.between(dateDeb, dateFin);
+            maDuree += duration.toMinutes();
 
-                Log.w("afficherStats",
-                        "" + monCursor.getString(0) + " - " + dateDeb + " - " + dateFin + " => " + laDuree);
+            // Stockage
+            stats.put(monType, maDuree);
+            Log.w("afficherStats", monType + " - " + dateDeb + " - " + dateFin + " => " + duration.toMinutes());
 
-                // Calcul du nombre de jours travaillés
-                // TODO:: calculer sur une période (ex: tâche sur 3 jours)
-                // Début
-                SimpleDateFormat dateFormater = new SimpleDateFormat("dd-MM-yyyy", Locale.FRANCE);
-
-                String dateDebString = dateFormater.format(dateDeb);
-                String dateFinString = dateFormater.format(dateFin);
-
-                nbJoursTravailles.put(dateDebString, 1);
-                Log.d("dateDebString", monCursor.getLong(1) + " -> " + dateDebString);
-                // Fin
-                nbJoursTravailles.put(dateFinString, 1);
-                Log.d("dateFinString", monCursor.getLong(2) + " -> " + dateFinString);
+            // Calcul du nombre de jours travaillés
+            LocalDateTime dateTmp = dateDeb;
+            for (int i = 0; i <= duration.toDays(); i++) {
+                // Formattage de la date
+                String dateString = dateTmp.format(dateFormater);
+                // Enregistrement comme date travaillée
+                nbJoursTravailles.put(dateString, 1);
+                Log.d("dateString", dateDeb + " + " + i + " -> " + dateTmp);
+                // Passage au jour suivant (si sur plusieurs jours)
+                dateTmp.plusDays(1);
             }
         }
 
