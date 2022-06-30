@@ -198,6 +198,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Calcul de la moyenne d'une série
+     *
+     * @param listeValeurs liste des valeurs
+     * @param nbValeurs    nombre de valeurs (ne pas se baser sur la taille de valeurs)
+     * @return moyenne
+     */
+    private float calculerMoyenne(ArrayList<Integer> listeValeurs, int nbValeurs) {
+        int total = 0;
+        for (int uneValeur : listeValeurs) {
+            // On additionne...
+            total += uneValeur;
+        }
+
+        return total / nbValeurs;
+    }
+
+    /**
+     * Calcul de la médiane d'une série
+     *
+     * @param listeValeurs liste des valeurs
+     * @param nbValeurs    nombre de valeurs (ne pas se baser sur la taille de valeurs)
+     * @return médiane
+     */
+    private float calculerMediane(ArrayList<Integer> listeValeurs, int nbValeurs) {
+        Collections.sort(listeValeurs);
+        Log.e("xxx", listeValeurs.toString());
+        int middle = nbValeurs / 2;
+        if (nbValeurs % 2 == 1) {
+            return listeValeurs.get(middle);
+        } else {
+            return (listeValeurs.get(middle - 1) + listeValeurs.get(middle)) / 2;
+        }
+    }
+
+    /**
      * Affiche les stats du calendrier selectionné
      * Read : https://www.reddit.com/r/androiddev/comments/2da207/getting_events_from_a_specific_calendar_and/
      */
@@ -233,12 +268,16 @@ public class MainActivity extends AppCompatActivity {
         // Amplitude horaire quotidienne
         HashMap<String, Integer> debutJournee = new HashMap<>();
         HashMap<String, Integer> finJournee = new HashMap<>();
+        // Durée des événements par type d'événéments
+        HashMap<String, Integer> stats = new HashMap<>();
+        // Temps de travail par jour
+        HashMap<String, Integer> dureeJournee = new HashMap<>();
 
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
                 CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(
                         Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
-        HashMap<String, Integer> stats = new HashMap<>();
+
         while (monCursor.moveToNext()) {
             // Si besoin d'un debug
             //Log.e("xxx", "."+ DatabaseUtils.dumpCursorToString(monCursor));
@@ -290,6 +329,7 @@ public class MainActivity extends AppCompatActivity {
             Log.w("afficherStats", monType + " - " + dateDeb + " - " + dateFin + " => " + duration.toMinutes());
 
             // Calcul du nombre de jours travaillés
+            // TODO :: ne pas gérer le multi-journées
             LocalDateTime dateTmp = dateDeb;
             for (int i = 0; i <= duration.toDays(); i++) {
                 // Formattage de la date
@@ -340,6 +380,17 @@ public class MainActivity extends AppCompatActivity {
             if (update) {
                 finJournee.put(dateFinString, minutesFin);
             }
+
+            // Calcul du temps de travail journalier
+            int dureeAAjouter = (int)duration.toMinutes();
+            // Déjà un enregistrement pour ce jour ?
+            if (dureeJournee.containsKey(dateDebString)) {
+                // Récupération de la durée
+                dureeAAjouter += dureeJournee.get(dateDebString);
+                dureeJournee.remove(dateDebString);
+            }
+            // On enregistre...
+            dureeJournee.put(dateDebString, dureeAAjouter);
         }
 
         monCursor.close();
@@ -374,13 +425,6 @@ public class MainActivity extends AppCompatActivity {
             amplitudeJournaliere.add(amplitudeDuJour);
         }
 
-        // Addition des amplitudes
-        int totalAmplitude = 0;
-        for (int uneDuree : amplitudeJournaliere) {
-            // On additionne...
-            totalAmplitude += uneDuree;
-        }
-
         // Statistiques
         TextView mesStats = (TextView) findViewById(R.id.texteStats);
         mesStats.setText("");
@@ -399,9 +443,13 @@ public class MainActivity extends AppCompatActivity {
         // Affichage du nombre de jours
         mesStats.append("**Nb jours travaillés** : " + nbJoursTravailles.size() + "\n");
         // Temps de travail moyen
-        mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", ((dureeTotale / 60.0f) / nbJoursTravailles.size())) + "h/j\n");
+        mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<Integer>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        // Temps de travail médian
+        mesStats.append("**Temps de travail médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<Integer>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire moyenne
-        mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", ((totalAmplitude / 60.0f) / nbJoursTravailles.size())) + "h/j\n");
+        mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        // Amplitude horaire médianne
+        mesStats.append("**Amplitude horaire médiann** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
     }
 
     /**
