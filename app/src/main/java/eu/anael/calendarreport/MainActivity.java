@@ -30,6 +30,7 @@ import android.provider.CalendarContract;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -37,7 +38,6 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import java.time.Duration;
@@ -48,7 +48,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -94,20 +93,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Action du bouton de tri
         fabTri = findViewById(R.id.iconeTri);
-        fabTri.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setTri();
-            }
-        });
+        fabTri.setOnClickListener(view -> setTri());
 
         FloatingActionButton groupBy = findViewById(R.id.iconeGroupBy);
-        groupBy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setGroupby();
-            }
-        });
+        groupBy.setOnClickListener(view -> setGroupby());
     }
 
     @Override
@@ -138,35 +127,22 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Réponse à une demande de droits de l'application
-     *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode) {
-            case DROIT_LECTURE_CALENDRIER: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.e("onRequestPermissionsRes", "OK - DROIT_LECTURE_CALENDRIER");
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                    afficherStats();
-                } else {
-
-                    Log.e("onRequestPermissionsRes", "Echec - DROIT_LECTURE_CALENDRIER");
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
+        if (requestCode == DROIT_LECTURE_CALENDRIER) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.e("onRequestPermissionsRes", "OK - DROIT_LECTURE_CALENDRIER");
+                // permission was granted, yay! Do the contacts-related task you need to do.
+                afficherStats();
+            } else {
+                Log.e("onRequestPermissionsRes", "Echec - DROIT_LECTURE_CALENDRIER");
+                // permission denied, boo! Disable the functionality that depends on this permission.
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
@@ -211,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
             total += uneValeur;
         }
 
-        return total / nbValeurs;
+        return (float) (total / nbValeurs);
     }
 
     /**
@@ -228,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
         if (nbValeurs % 2 == 1) {
             return listeValeurs.get(middle);
         } else {
-            return (listeValeurs.get(middle - 1) + listeValeurs.get(middle)) / 2;
+            return (float) ((listeValeurs.get(middle - 1) + listeValeurs.get(middle)) / 2);
         }
     }
 
@@ -259,8 +235,6 @@ public class MainActivity extends AppCompatActivity {
         ContentUris.appendId(builder, startMills);
         ContentUris.appendId(builder, endMills);
 
-        // Un simple calendrier FR
-        Calendar monCalendar = Calendar.getInstance(Locale.FRANCE);
         // Formatteur de dates
         DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         // Nb de jours travaillés
@@ -295,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
             LocalDateTime dateFin = LocalDateTime.ofInstant(Instant.ofEpochMilli(monCursor.getLong(2)), ZoneId.systemDefault());
             // Propriétaire
             String owner = monCursor.getString(3);
-            //Log.w("Owner : ", owner.toLowerCase().trim());
+            Log.w("Owner : ", owner.toLowerCase().trim());
             // Filtrage sur l'organisateur
             // if (! owner.toLowerCase().trim().contains("xxx@example.com")) {
             //    continue;
@@ -313,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // Calcul de la durée de l'événement
-            int maDuree = 0;
+            Integer maDuree = 0;
             // Type d'événement déjà connu ?
             if (stats.containsKey(monType)) {
                 // Récupération de la durée
@@ -323,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
             }
             // Ajout du temps de l'événement (Fin - Début) + millisecondes -> secondes + secondes -> minutes
             Duration duration = Duration.between(dateDeb, dateFin);
-            maDuree += duration.toMinutes();
+            maDuree += (int) duration.toMinutes();
             // Stockage
             stats.put(monType, maDuree);
             Log.w("afficherStats", monType + " - " + dateDeb + " - " + dateFin + " => " + duration.toMinutes());
@@ -338,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                 nbJoursTravailles.put(dateString, 1);
                 Log.d("dateString", dateDeb + " + " + i + " -> " + dateTmp);
                 // Passage au jour suivant (si sur plusieurs jours)
-                dateTmp.plusDays(1);
+                dateTmp = dateTmp.plusDays(1);
             }
 
             // Calcul de l'amplitude horaire
@@ -413,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Calcul des amplitudes
-        ArrayList<Integer> amplitudeJournaliere = new ArrayList<Integer>();
+        ArrayList<Integer> amplitudeJournaliere = new ArrayList<>();
         // Pour chaque journée...
         for (String uneDate : debutJournee.keySet()) {
             if (!finJournee.containsKey(uneDate)) {
@@ -426,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Statistiques
-        TextView mesStats = (TextView) findViewById(R.id.texteStats);
+        TextView mesStats = findViewById(R.id.texteStats);
         mesStats.setText("");
         for (HashMap.Entry<String, Integer> entry : stats2.entrySet()) {
             // Nom de l'item
@@ -443,9 +417,9 @@ public class MainActivity extends AppCompatActivity {
         // Affichage du nombre de jours
         mesStats.append("**Nb jours travaillés** : " + nbJoursTravailles.size() + "\n");
         // Temps de travail moyen
-        mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<Integer>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
         // Temps de travail médian
-        mesStats.append("**Temps de travail médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<Integer>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Temps de travail médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire moyenne
         mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire médianne
@@ -455,9 +429,6 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Sort HashMap by Value
      * https://www.mkyong.com/java/how-to-sort-a-map-in-java/
-     *
-     * @param unsortMap
-     * @return
      */
     private static Map<String, Integer> sortByValue(Map<String, Integer> unsortMap) {
 
@@ -466,11 +437,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 2. Sort list with Collections.sort(), provide a custom Comparator
         //    Try switch the o1 o2 position for a different order
-        list.sort(new Comparator<Map.Entry<String, Integer>>() {
-            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
-                return (o2.getValue()).compareTo(o1.getValue());
-            }
-        });
+        list.sort((o1, o2) -> (o2.getValue()).compareTo(o1.getValue()));
 
         // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
         Map<String, Integer> sortedMap = new LinkedHashMap<>();
