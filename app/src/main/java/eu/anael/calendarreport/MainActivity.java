@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity {
         // Amplitude horaire moyenne
         mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire médianne
-        mesStats.append("**Amplitude horaire médiane* : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Amplitude horaire médiane** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
     }
 
     /**
