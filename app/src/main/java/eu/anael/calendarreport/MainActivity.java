@@ -48,6 +48,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -356,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // Calcul du temps de travail journalier
-            int dureeAAjouter = (int)duration.toMinutes();
+            int dureeAAjouter = (int) duration.toMinutes();
             // Déjà un enregistrement pour ce jour ?
             if (dureeJournee.containsKey(dateDebString)) {
                 // Récupération de la durée
@@ -424,6 +425,8 @@ public class MainActivity extends AppCompatActivity {
         mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire médianne
         mesStats.append("**Amplitude horaire médiane** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        // Date du build
+        mesStats.append(" ---  Compilation : " + new Date(BuildConfig.TIMESTAMP) + "  --- \n");
     }
 
     /**
