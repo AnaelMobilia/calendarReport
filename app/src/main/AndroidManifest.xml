@@ -19,8 +19,7 @@
 * along with calendarReport. If not, see <http://www.gnu.org/licenses/>
 */
 -->
-<manifest package="eu.anael.calendarreport"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Accès au calendrier en LS -->
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
