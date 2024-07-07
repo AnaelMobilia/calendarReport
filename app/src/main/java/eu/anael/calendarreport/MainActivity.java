@@ -181,6 +181,11 @@ public class MainActivity extends AppCompatActivity {
      * @return moyenne
      */
     private float calculerMoyenne(ArrayList<Integer> listeValeurs, int nbValeurs) {
+        // Gestion du cas de la division par zéro
+        if (nbValeurs == 0) {
+            return (float) 0;
+        }
+
         int total = 0;
         for (int uneValeur : listeValeurs) {
             // On additionne...
