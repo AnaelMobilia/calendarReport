@@ -203,6 +203,11 @@ public class MainActivity extends AppCompatActivity {
      * @return médiane
      */
     private float calculerMediane(ArrayList<Integer> listeValeurs, int nbValeurs) {
+        if (nbValeurs == 0) {
+            return (float) 0;
+        } else if (nbValeurs == 1) {
+            return listeValeurs.get(0);
+        }
         Collections.sort(listeValeurs);
         Log.e("xxx", listeValeurs.toString());
         int middle = nbValeurs / 2;
