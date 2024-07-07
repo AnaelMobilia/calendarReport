@@ -27,18 +27,17 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -211,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Affiche les stats du calendrier selectionné
-     * Read : https://www.reddit.com/r/androiddev/comments/2da207/getting_events_from_a_specific_calendar_and/
+     * Read : <a href="https://www.reddit.com/r/androiddev/comments/2da207/getting_events_from_a_specific_calendar_and/">...</a>
      */
     private void afficherStats() {
         // Données à récupérer sur les événements du calendrier
