@@ -1,5 +1,5 @@
 /*
-* Copyright 2017-2022 Anael Mobilia
+* Copyright 2017-2024 Anael Mobilia
 *
 * This file is part of calendarReport.
 *
