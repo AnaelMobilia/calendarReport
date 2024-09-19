@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -243,12 +242,12 @@ public class MainActivity extends AppCompatActivity {
         // Formatteur de dates
         DateTimeFormatter dateFormater = DateTimeFormatter.ISO_LOCAL_DATE;
         // Amplitude horaire quotidienne
-        HashMap<String, Integer> debutJournee = new HashMap<>();
-        HashMap<String, Integer> finJournee = new HashMap<>();
+        TreeMap<String, Integer> debutJournee = new TreeMap<>();
+        TreeMap<String, Integer> finJournee = new TreeMap<>();
         // Durée des événements par type d'événéments
-        HashMap<String, Integer> stats = new HashMap<>();
+        TreeMap<String, Integer> stats = new TreeMap<>();
         // Temps de travail par jour
-        HashMap<String, Integer> dureeJournee = new HashMap<>();
+        TreeMap<String, Integer> dureeJournee = new TreeMap<>();
 
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION, CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
@@ -390,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
         // Statistiques
         TextView mesStats = findViewById(R.id.texteStats);
         mesStats.setText("");
-        for (HashMap.Entry<String, Integer> entry : stats2.entrySet()) {
+        for (Map.Entry<String, Integer> entry : stats2.entrySet()) {
             // Nom de l'item
             String key = entry.getKey();
             // Durée totale
