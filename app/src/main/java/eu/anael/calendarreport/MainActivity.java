@@ -41,9 +41,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -248,6 +250,8 @@ public class MainActivity extends AppCompatActivity {
         TreeMap<String, Integer> stats = new TreeMap<>();
         // Temps de travail par jour
         TreeMap<String, Integer> dureeJournee = new TreeMap<>();
+        // Temps de travail par semaine
+        TreeMap<String, Integer> dureeSemaine = new TreeMap<>();
 
         // Récupération de la liste des événements
         Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION, CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
@@ -356,6 +360,36 @@ public class MainActivity extends AppCompatActivity {
 
         monCursor.close();
 
+        // Calcul du temps de travail hebdo
+        String previousWeekRef = "";
+        TreeMap<Integer, Integer> joursTravailles = new TreeMap<>();
+        int tempsTravail = 0;
+        for (Map.Entry<String, Integer> entry : dureeJournee.entrySet()) {
+            // Date du jour
+            String key = entry.getKey();
+            String numSemaineAnnee = LocalDate.parse(key).getYear() + "-" + LocalDate.parse(key).get(WeekFields.ISO.weekOfYear());
+            // Numéro du jour de la semaine
+            int numJour = LocalDate.parse(key).get(WeekFields.ISO.dayOfWeek());
+            // Amplitude du jour
+            int value = entry.getValue();
+
+            // Nouvelle semaine
+            if (!previousWeekRef.equals(numSemaineAnnee)) {
+                // Si on a au moins 5 jours travaillés, enregistrer les valeurs
+                // Permet de neutraliser les semaines partielles qui ne sont pas valorisables sur une moyenne ou médiane
+                if (joursTravailles.size() >= 5) {
+                    dureeSemaine.put(numSemaineAnnee, tempsTravail);
+                }
+                // Réinitialiser les valeurs
+                previousWeekRef = numSemaineAnnee;
+                joursTravailles = new TreeMap<>();
+                tempsTravail = 0;
+            }
+            // Marquer le jour comme travaillé
+            joursTravailles.put(numJour, 1);
+            tempsTravail += value;
+        }
+
         // Gestion des tris
         Map<String, Integer> stats2;
         if (triByDuree) {
@@ -405,8 +439,10 @@ public class MainActivity extends AppCompatActivity {
         mesStats.append("**Nb jours travaillés** : " + dureeJournee.size() + "\n");
         // Temps de travail moyen
         mesStats.append("**Temps de travail journalier moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Temps de travail hebdo moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeSemaine.values()), dureeSemaine.size()) / 60.0f)) + "h/sem\n");
         // Temps de travail médian
         mesStats.append("**Temps de travail journalier médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Temps de travail hebdo médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeSemaine.values()), dureeSemaine.size()) / 60.0f)) + "h/sem\n");
         // Amplitude horaire moyenne
         mesStats.append("**Amplitude horaire journalière moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, dureeJournee.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire médianne
