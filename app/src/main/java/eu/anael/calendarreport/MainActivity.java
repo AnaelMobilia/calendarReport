@@ -224,22 +224,17 @@ public class MainActivity extends AppCompatActivity {
      */
     private void afficherStats() {
         // Données à récupérer sur les événements du calendrier
-        String[] EVENT_PROJECTION = new String[]{CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN,
-                CalendarContract.Instances.END, CalendarContract.Instances.ORGANIZER};
+        String[] EVENT_PROJECTION = new String[]{CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END, CalendarContract.Instances.ORGANIZER};
 
         // Filtre sur les dates
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 
         Calendar beginTime = Calendar.getInstance();
-        beginTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn),
-                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois),
-                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
+        beginTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutAn), Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutMois), Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateDebutJour), 0, 0);
         long startMills = beginTime.getTimeInMillis();
 
         Calendar endTime = Calendar.getInstance();
-        endTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinAn),
-                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois),
-                Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
+        endTime.set(Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinAn), Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinMois), Utils.getPrefInt(getApplicationContext(), R.string.idOptionDateFinJour), 23, 59);
         long endMills = endTime.getTimeInMillis();
 
         ContentUris.appendId(builder, startMills);
@@ -256,9 +251,7 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String, Integer> dureeJournee = new HashMap<>();
 
         // Récupération de la liste des événements
-        Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION,
-                CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(
-                        Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
+        Cursor monCursor = monContentResolver.query(builder.build(), EVENT_PROJECTION, CalendarContract.Instances.CALENDAR_ID + " = ?", new String[]{String.valueOf(Utils.getPrefInt(getApplicationContext(), R.string.idOptionCalendrier))}, null);
 
         while (monCursor.moveToNext()) {
             // Si besoin d'un debug
