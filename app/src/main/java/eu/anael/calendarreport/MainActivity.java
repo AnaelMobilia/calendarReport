@@ -247,8 +247,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Formatteur de dates
         DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        // Nb de jours travaillés
-        HashMap<String, Integer> nbJoursTravailles = new HashMap<>();
         // Amplitude horaire quotidienne
         HashMap<String, Integer> debutJournee = new HashMap<>();
         HashMap<String, Integer> finJournee = new HashMap<>();
@@ -311,19 +309,6 @@ public class MainActivity extends AppCompatActivity {
             // Stockage
             stats.put(monType, maDuree);
             Log.w("afficherStats", monType + " - " + dateDeb + " - " + dateFin + " => " + duration.toMinutes());
-
-            // Calcul du nombre de jours travaillés
-            // TODO :: ne pas gérer le multi-journées
-            LocalDateTime dateTmp = dateDeb;
-            for (int i = 0; i <= duration.toDays(); i++) {
-                // Formattage de la date
-                String dateString = dateTmp.format(dateFormater);
-                // Enregistrement comme date travaillée
-                nbJoursTravailles.put(dateString, 1);
-                Log.d("dateString", dateDeb + " + " + i + " -> " + dateTmp);
-                // Passage au jour suivant (si sur plusieurs jours)
-                dateTmp = dateTmp.plusDays(1);
-            }
 
             // Calcul de l'amplitude horaire
             // TODO :: prendre en charge les événements sur plusieurs jours
@@ -425,15 +410,15 @@ public class MainActivity extends AppCompatActivity {
         // Affichage du total
         mesStats.append("**Total** : " + Math.round(dureeTotale / 60.0f) + "h\n");
         // Affichage du nombre de jours
-        mesStats.append("**Nb jours travaillés** : " + nbJoursTravailles.size() + "\n");
+        mesStats.append("**Nb jours travaillés** : " + dureeJournee.size() + "\n");
         // Temps de travail moyen
-        mesStats.append("**Temps de travail moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Temps de travail journalier moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
         // Temps de travail médian
-        mesStats.append("**Temps de travail médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeJournee.values()), nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Temps de travail journalier médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire moyenne
-        mesStats.append("**Amplitude horaire moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Amplitude horaire journalière moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, dureeJournee.size()) / 60.0f)) + "h/j\n");
         // Amplitude horaire médianne
-        mesStats.append("**Amplitude horaire médiane** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, nbJoursTravailles.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Amplitude horaire journalière médiane** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, dureeJournee.size()) / 60.0f)) + "h/j\n");
         // Date du build
         mesStats.append(" ---  Compilation : " + new Date(BuildConfig.TIMESTAMP) + "  --- \n");
     }
