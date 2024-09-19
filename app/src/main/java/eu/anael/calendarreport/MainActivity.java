@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         ContentUris.appendId(builder, endMills);
 
         // Formatteur de dates
-        DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter dateFormater = DateTimeFormatter.ISO_LOCAL_DATE;
         // Amplitude horaire quotidienne
         HashMap<String, Integer> debutJournee = new HashMap<>();
         HashMap<String, Integer> finJournee = new HashMap<>();
