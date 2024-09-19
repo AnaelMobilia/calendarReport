@@ -437,6 +437,8 @@ public class MainActivity extends AppCompatActivity {
         mesStats.append("**Total** : " + Math.round(dureeTotale / 60.0f) + "h\n");
         // Affichage du nombre de jours
         mesStats.append("**Nb jours travaillés** : " + dureeJournee.size() + "\n");
+        // Affichage du nombre de semaines
+        mesStats.append("**Nb semaines travaillés** : " + dureeSemaine.size() + "\n");
         // Temps de travail moyen
         mesStats.append("**Temps de travail journalier moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
         mesStats.append("**Temps de travail hebdo moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeSemaine.values()), dureeSemaine.size()) / 60.0f)) + "h/sem\n");
