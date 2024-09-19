@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdk 34
-    buildToolsVersion = '34.0.0'
+    buildToolsVersion = '35.0.0'
     defaultConfig {
         applicationId "eu.anael.calendarreport"
         minSdk 26
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
@@ -31,7 +31,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.annotation:annotation-jvm:1.8.0'
+    implementation 'androidx.annotation:annotation-jvm:1.8.2'
 }
 
 allprojects {
