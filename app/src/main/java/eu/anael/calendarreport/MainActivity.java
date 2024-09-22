@@ -178,12 +178,13 @@ public class MainActivity extends AppCompatActivity {
      * Calcul de la moyenne d'une série
      *
      * @param listeValeurs liste des valeurs
-     * @param nbValeurs    nombre de valeurs (ne pas se baser sur la taille de valeurs)
+     * @param isDaily      Est-ce pour un calcul de temps journalier ?
      * @return moyenne
      */
-    private float calculerMoyenne(ArrayList<Integer> listeValeurs, int nbValeurs) {
+    private float calculerMoyenne(ArrayList<Integer> listeValeurs, boolean isDaily) {
+        float nbValeurs = listeValeurs.size();
         // Gestion du cas de la division par zéro
-        if (nbValeurs == 0) {
+        if (nbValeurs == 0.0) {
             return (float) 0;
         }
 
@@ -191,32 +192,50 @@ public class MainActivity extends AppCompatActivity {
         for (int uneValeur : listeValeurs) {
             // On additionne...
             total += uneValeur;
+            // Gestion des journées partielles : en dessous de 4h, on considère que c'est 1/2 journée
+            if (isDaily && uneValeur < 4) {
+                nbValeurs -= (float) 0.5;
+            }
         }
 
-        return (float) (total / nbValeurs);
+        return (total / nbValeurs / 60.0f);
     }
 
     /**
      * Calcul de la médiane d'une série
      *
      * @param listeValeurs liste des valeurs
-     * @param nbValeurs    nombre de valeurs (ne pas se baser sur la taille de valeurs)
+     * @param isDaily      Est-ce pour un calcul de temps journalier ?
      * @return médiane
      */
-    private float calculerMediane(ArrayList<Integer> listeValeurs, int nbValeurs) {
-        if (nbValeurs == 0) {
+    private float calculerMediane(ArrayList<Integer> listeValeurs, boolean isDaily) {
+        float nbValeurs = listeValeurs.size();
+
+        if (nbValeurs == 0.0) {
             return (float) 0;
-        } else if (nbValeurs == 1) {
+        } else if (nbValeurs == 1.0) {
             return listeValeurs.get(0);
         }
+
+        if (isDaily) {
+            for (int uneValeur : listeValeurs) {
+                // Gestion des journées partielles : en dessous de 4h, on considère que c'est 1/2 journée
+                if (uneValeur < 4) {
+                    nbValeurs -= (float) 0.5;
+                }
+            }
+        }
+
         Collections.sort(listeValeurs);
         Log.e("xxx", listeValeurs.toString());
-        int middle = nbValeurs / 2;
+        int middle = (int) (nbValeurs / 2);
+        float maValue;
         if (nbValeurs % 2 == 1) {
-            return listeValeurs.get(middle);
+            maValue = listeValeurs.get(middle);
         } else {
-            return (float) ((listeValeurs.get(middle - 1) + listeValeurs.get(middle)) / 2);
+            maValue = ((listeValeurs.get(middle - 1) + listeValeurs.get(middle)) / 2);
         }
+        return maValue / 60.0f;
     }
 
     /**
@@ -440,15 +459,16 @@ public class MainActivity extends AppCompatActivity {
         // Affichage du nombre de semaines
         mesStats.append("**Nb semaines travaillés** : " + dureeSemaine.size() + "\n");
         // Temps de travail moyen
-        mesStats.append("**Temps de travail journalier moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
-        mesStats.append("**Temps de travail hebdo moyen** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(new ArrayList<>(dureeSemaine.values()), dureeSemaine.size()) / 60.0f)) + "h/sem\n");
+        mesStats.append("**Temps de travail journalier moyen** : " + String.format(Locale.FRANCE, "%.2f", calculerMoyenne(new ArrayList<>(dureeJournee.values()), true)) + "h/j\n");
         // Temps de travail médian
-        mesStats.append("**Temps de travail journalier médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeJournee.values()), dureeJournee.size()) / 60.0f)) + "h/j\n");
-        mesStats.append("**Temps de travail hebdo médian** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(new ArrayList<>(dureeSemaine.values()), dureeSemaine.size()) / 60.0f)) + "h/sem\n");
+        mesStats.append("**Temps de travail journalier médian** : " + String.format(Locale.FRANCE, "%.2f",
+                calculerMediane(new ArrayList<>(dureeJournee.values()), true)) + "h/j\n");
+        mesStats.append("**Temps de travail hebdo moyen** : " + String.format(Locale.FRANCE, "%.2f", calculerMoyenne(new ArrayList<>(dureeSemaine.values()), false)) + "h/sem\n");
+        mesStats.append("**Temps de travail hebdo médian** : " + String.format(Locale.FRANCE, "%.2f", calculerMediane(new ArrayList<>(dureeSemaine.values()), false)) + "h/sem\n");
         // Amplitude horaire moyenne
-        mesStats.append("**Amplitude horaire journalière moyenne** : " + String.format(Locale.FRANCE, "%.2f", (calculerMoyenne(amplitudeJournaliere, dureeJournee.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Amplitude horaire journalière moyenne** : " + String.format(Locale.FRANCE, "%.2f", calculerMoyenne(amplitudeJournaliere, true)) + "h/j\n");
         // Amplitude horaire médianne
-        mesStats.append("**Amplitude horaire journalière médiane** : " + String.format(Locale.FRANCE, "%.2f", (calculerMediane(amplitudeJournaliere, dureeJournee.size()) / 60.0f)) + "h/j\n");
+        mesStats.append("**Amplitude horaire journalière médiane** : " + String.format(Locale.FRANCE, "%.2f", calculerMediane(amplitudeJournaliere, true)) + "h/j\n");
         // Date du build
         mesStats.append(" ---  Compilation : " + new Date(BuildConfig.TIMESTAMP) + "  --- \n");
     }
